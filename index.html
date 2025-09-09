@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot Widget</title>
+  <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+  <style>
+    /* Floating Chat Button */
+    #chat-widget {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #ff69b4; /* pink */
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    #chat-widget img {
+      width: 30px;
+      height: 30px;
+    }
+
+    /* Chat Modal */
+    #chat-modal {
+      display: none;
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 350px;
+      max-width: 90%;
+      height: 500px;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      z-index: 9998;
+    }
+
+    .n8n-chat {
+      height: 100%;
+      background-color: #ffffff; /* white chat background */
+      color: #000000; /* black text */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Chat Button -->
+  <div id="chat-widget">
+    💬
+  </div>
+
+  <!-- Chat Modal -->
+  <div id="chat-modal">
+    <div id="chat-container"></div>
+  </div>
+
+  <script type="module">
+    import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+    const chatContainer = document.getElementById('chat-container');
+
+    const chat = createChat({
+      webhookUrl: 'https://lcswvibes.app.n8n.cloud/workflow/u6SgfkIQ4KryIhuA', // <-- replace this
+      container: chatContainer
+    });
+
+    const widget = document.getElementById('chat-widget');
+    const modal = document.getElementById('chat-modal');
+
+    widget.addEventListener('click', () => {
+      if(modal.style.display === 'none' || modal.style.display === '') {
+        modal.style.display = 'block';
+      } else {
+        modal.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
