@@ -49,12 +49,27 @@
   <script type="module">
     import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
-    createChat({
+    const chat = createChat({
       webhookUrl: 'https://lcswvibes.app.n8n.cloud/webhook/d3340d12-6089-40d8-8d85-be73b9235d93/chat', // Replace with your n8n cloud webhook
-      floating: true,                             // Enable floating button
-      bubble: true,                               // Show chat bubble
-      position: 'bottom-right',                   // Bottom right position
-      greeting: "Hi there! My name is Elite, how can I assist you today?" // Custom greeting
+      floating: true,
+      bubble: true,
+      position: 'bottom-right'
+    });
+
+    // Wait for chat to initialize, then override bot name and greeting
+    chat.then(widget => {
+      if(widget && widget.shadowRoot) {
+        const root = widget.shadowRoot;
+
+        // Override default greeting text
+        const interval = setInterval(() => {
+          const botMsg = root.querySelector('.n8n-chat-message.bot .n8n-chat-message-text');
+          if(botMsg && botMsg.innerText.includes('Nathan')) {
+            botMsg.innerText = "Hi there! My name is Elite, how can I assist you today?";
+            clearInterval(interval);
+          }
+        }, 100);
+      }
     });
   </script>
 
