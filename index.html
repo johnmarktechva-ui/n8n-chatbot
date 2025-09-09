@@ -1,87 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chatbot Widget</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elite Chatbot</title>
+  
+  <!-- n8n chat CSS -->
   <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+
   <style>
-    /* Floating Chat Button */
-    #chat-widget {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #ff69b4; /* pink */
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      z-index: 9999;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    /* Page styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #ffffff;
     }
 
-    #chat-widget img {
-      width: 30px;
-      height: 30px;
+    /* Header */
+    header {
+      width: 100%;
+      background-color: pink;
+      color: #000000;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
     }
 
-    /* Chat Modal */
-    #chat-modal {
-      display: none;
-      position: fixed;
-      bottom: 90px;
-      right: 20px;
-      width: 350px;
-      max-width: 90%;
-      height: 500px;
-      border-radius: 15px;
-      overflow: hidden;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      z-index: 9998;
+    /* Override n8n chat widget styles */
+    .n8n-chat-container {
+      background-color: #ffffff !important; /* Widget background white */
+      color: #000000 !important;           /* Text black */
+      border-radius: 8px !important;
     }
 
-    .n8n-chat {
-      height: 100%;
-      background-color: #ffffff; /* white chat background */
-      color: #000000; /* black text */
+    /* Position chat widget bottom-right */
+    .n8n-chat-floating {
+      bottom: 20px !important;
+      right: 20px !important;
     }
   </style>
 </head>
 <body>
 
-  <!-- Floating Chat Button -->
-  <div id="chat-widget">
-    💬
-  </div>
-
-  <!-- Chat Modal -->
-  <div id="chat-modal">
-    <div id="chat-container"></div>
-  </div>
+  <header>Elite Chatbot</header>
 
   <script type="module">
     import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
-    const chatContainer = document.getElementById('chat-container');
-
-    const chat = createChat({
-      webhookUrl: 'https://lcswvibes.app.n8n.cloud/workflow/u6SgfkIQ4KryIhuA', // <-- replace this
-      container: chatContainer
-    });
-
-    const widget = document.getElementById('chat-widget');
-    const modal = document.getElementById('chat-modal');
-
-    widget.addEventListener('click', () => {
-      if(modal.style.display === 'none' || modal.style.display === '') {
-        modal.style.display = 'block';
-      } else {
-        modal.style.display = 'none';
-      }
+    createChat({
+      webhookUrl: 'https://lcswvibes.app.n8n.cloud/webhook/d3340d12-6089-40d8-8d85-be73b9235d93/chat', // Replace with your n8n cloud webhook
+      floating: true,                             // Enable floating button
+      bubble: true,                               // Show chat bubble
+      position: 'bottom-right',                   // Bottom right position
+      greeting: "Hi there! My name is Elite, how can I assist you today?" // Custom greeting
     });
   </script>
+
 </body>
 </html>
