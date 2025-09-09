@@ -1,35 +1,15 @@
-<body>
-  <h1>💬 My Chatbot</h1>
+<h1>💬 My Chatbot</h1>
+<div id="n8n-chat"></div>
 
-  <script type="module">
-    import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+<script type="module">
+  import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
+  window.onload = () => {
     createChat({
-      webhookUrl: 'https://lcswvibes.app.n8n.cloud/webhook/d3340d12-6089-40d8-8d85-be73b9235d93/chat'
+      webhookUrl: 'https://lcswvibes.app.n8n.cloud/webhook/d3340d12-6089-40d8-8d85-be73b9235d93/chat',
+      container: '#n8n-chat'
     });
-  </script>
+  };
+</script>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-      padding: 20px;
-      background-color: #ffffff;
-      color: #000000;
-    }
-    h1 {
-      margin-bottom: 20px;
-      color: #000000;
-    }
-
-    /* Light mode override for n8n chat */
-    .n8n-chat-container {
-      background-color: #f8f8f8 !important;
-      color: #000000 !important;
-    }
-  </style>
-</body>
 
