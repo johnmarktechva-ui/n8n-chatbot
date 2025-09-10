@@ -28,14 +28,13 @@
       font-weight: bold;
     }
 
-    /* Override n8n chat widget styles */
+    /* Chat widget styles */
     .n8n-chat-container {
       background-color: #ffffff !important; /* Widget background white */
       color: #000000 !important;           /* Text black */
       border-radius: 8px !important;
     }
 
-    /* Position chat widget bottom-right */
     .n8n-chat-floating {
       bottom: 20px !important;
       right: 20px !important;
@@ -49,29 +48,17 @@
   <script type="module">
     import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
-    const chat = createChat({
-      webhookUrl: 'https://lcswvibes.app.n8n.cloud/webhook/d3340d12-6089-40d8-8d85-be73b9235d93/chat', // Replace with your n8n cloud webhook
+    createChat({
+      webhookUrl: 'https://lcswvibes.app.n8n.cloud/webhook/d3340d12-6089-40d8-8d85-be73b9235d93/chat', 
       floating: true,
       bubble: true,
-      position: 'bottom-right'
-    });
-
-    // Wait for chat to initialize, then override bot name and greeting
-    chat.then(widget => {
-      if(widget && widget.shadowRoot) {
-        const root = widget.shadowRoot;
-
-        // Override default greeting text
-        const interval = setInterval(() => {
-          const botMsg = root.querySelector('.n8n-chat-message.bot .n8n-chat-message-text');
-          if(botMsg && botMsg.innerText.includes('Nathan')) {
-            botMsg.innerText = "Hi there! My name is Elite, how can I assist you today?";
-            clearInterval(interval);
-          }
-        }, 100);
-      }
+      position: 'bottom-right',
+      // 👇 New configs
+      title: "Elite", 
+      defaultMessage: "Hi there! My name is Elite, how can I assist you today?"
     });
   </script>
 
 </body>
 </html>
+
