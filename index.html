@@ -9,7 +9,6 @@
   <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
 
   <style>
-    /* Page styling */
     body {
       font-family: Arial, sans-serif;
       margin: 0;
@@ -17,7 +16,6 @@
       background-color: #ffffff;
     }
 
-    /* Header */
     header {
       width: 100%;
       background-color: pink;
@@ -26,18 +24,6 @@
       text-align: center;
       font-size: 24px;
       font-weight: bold;
-    }
-
-    /* Chat widget styles */
-    .n8n-chat-container {
-      background-color: #ffffff !important;
-      color: #000000 !important;
-      border-radius: 8px !important;
-    }
-
-    .n8n-chat-floating {
-      bottom: 20px !important;
-      right: 20px !important;
     }
 
     /* Toast popup */
@@ -74,35 +60,54 @@
   <script type="module">
     import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
-    createChat({
-      webhookUrl: 'https://lcswvibes.app.n8n.cloud/webhook/d3340d12-6089-40d8-8d85-be73b9235d93/chat', 
+    const chat = createChat({
+      webhookUrl: 'https://lcswvibes.app.n8n.cloud/webhook/d3340d12-6089-40d8-8d85-be73b9235d93/chat',
       floating: true,
       bubble: true,
-      position: 'bottom-right',
-      title: "Elite", 
-      defaultMessage: "Hi there! My name is Elite, how can I assist you today?"
-    }).then(widget => {
+      position: 'bottom-right'
+    });
+
+    // --- Toast logic (always runs)
+    const toast = document.getElementById('chat-toast');
+    setTimeout(() => {
+      toast.style.display = 'block'; // 👈 stays until clicked
+    }, 2000);
+
+    // Click toast -> open chat
+    toast.addEventListener('click', () => {
+      chat.then(widget => {
+        const root = widget.shadowRoot;
+        const bubbleBtn = root.querySelector('.n8n-chat-bubble');
+        if (bubbleBtn) bubbleBtn.click();
+      });
+      toast.style.display = 'none'; // hide toast after opening chat
+    });
+
+    // --- Force rename bot + greeting
+    chat.then(widget => {
       if (widget && widget.shadowRoot) {
         const root = widget.shadowRoot;
 
-        // Toast logic
-        const toast = document.getElementById('chat-toast');
-        setTimeout(() => {
-          toast.style.display = 'block';
-          setTimeout(() => { toast.style.display = 'none'; }, 6000);
-        }, 2000);
+        const interval = setInterval(() => {
+          // Change bot name
+          const header = root.querySelector('.n8n-chat-header-title');
+          if (header) {
+            header.textContent = "Elite";
+          }
 
-        // Make toast clickable -> opens chat
-        toast.addEventListener('click', () => {
-          const bubbleBtn = root.querySelector('.n8n-chat-bubble');
-          if (bubbleBtn) bubbleBtn.click(); // simulate bubble click
-          toast.style.display = 'none'; // hide toast after click
-        });
+          // Change first message
+          const botMsg = root.querySelector('.n8n-chat-message.bot .n8n-chat-message-text');
+          if (botMsg && botMsg.innerText.includes("Nathan")) {
+            botMsg.innerText = "Hi there! My name is Elite, how can I assist you today?";
+            clearInterval(interval);
+          }
+        }, 500);
       }
     });
   </script>
 
 </body>
 </html>
+
 
 
