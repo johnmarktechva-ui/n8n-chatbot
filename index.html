@@ -1,209 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Elite Chatbot</title>
-  <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; margin:0; background:#fff; }
-    header { background:pink; color:#000; padding:20px; text-align:center; font-weight:700; }
-    /* Toast */
-    #chat-toast { position:fixed; bottom:90px; right:30px; background:pink; color:#000; padding:10px 15px; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.18); z-index:9999; cursor:pointer; display:none; }
-    /* Fallback badge if we can't change internal widget */
-    #elite-badge { position:fixed; bottom:20px; right:20px; background:pink; color:#000; padding:6px 10px; border-radius:20px; box-shadow:0 2px 6px rgba(0,0,0,.18); font-size:13px; z-index:99999; display:none; cursor:pointer; }
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#fff; }
+    header { width:100%; background:pink; color:#000; padding:20px; text-align:center; font-weight:700; font-size:24px; }
+
+    /* Animations */
+    @keyframes popIn {
+      0% { opacity: 0; transform: translateY(20px) scale(0.8); }
+      60% { opacity: 1; transform: translateY(-5px) scale(1.05); }
+      100% { transform: translateY(0) scale(1); }
+    }
+
+    /* Toast popup */
+    #chat-toast {
+      position: fixed;
+      bottom: 90px;
+      right: 30px;
+      background: pink;
+      color: black;
+      padding: 10px 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.18);
+      z-index: 9999;
+      cursor: pointer;
+      font-weight: bold;
+      display: none;
+      animation: popIn 0.5s ease forwards;
+    }
+
+    /* Overlay badge for old versions / fallback */
+    #elite-overlay {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      background: pink;
+      color: black;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-weight: bold;
+      pointer-events: auto;
+      font-size: 13px;
+      display: none; /* hidden by default, shows only if needed */
+      cursor: pointer;
+      text-align: center;
+      animation: popIn 0.5s ease forwards;
+    }
   </style>
 </head>
 <body>
   <header>Elite Chatbot</header>
 
-  <!-- Toast and fallback badge -->
   <div id="chat-toast">💬 Chat with me!</div>
-  <div id="elite-badge">Elite</div>
+  <div id="elite-overlay">Elite</div>
 
   <script type="module">
     import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
-    const FROM_RE = /\bNathan\b/gi;    // word-boundary replace (case-insensitive)
-    const TO_TEXT = 'Elite';
-    const TRY_TIMEOUT = 9000; // ms, how long we aggressively try replacements
-
     const toast = document.getElementById('chat-toast');
-    const badge = document.getElementById('elite-badge');
+    const overlay = document.getElementById('elite-overlay');
 
-    // 1) instantiate widget (uses new config where available)
     const chat = createChat({
       webhookUrl: 'https://lcswvibes.app.n8n.cloud/webhook/d3340d12-6089-40d8-8d85-be73b9235d93/chat',
       floating: true,
       bubble: true,
       position: 'bottom-right',
-      title: TO_TEXT,
+      title: "Elite",
       defaultMessage: "Hi there! My name is Elite, how can I assist you today?"
     });
 
-    // 2) show persistent toast after 2s
+    // Show persistent toast after 2s with animation
     setTimeout(() => { toast.style.display = 'block'; }, 2000);
 
-    // clicking toast should open the chat and hide toast
+    // Click toast -> open chat
     toast.addEventListener('click', () => {
-      chat.then(widget => {
-        tryClickBubble(widget);
-      }).catch(() => {});
+      openChat();
       toast.style.display = 'none';
     });
 
-    // also clicking the fallback badge tries to open the chat
-    badge.addEventListener('click', () => {
-      chat.then(widget => {
-        tryClickBubble(widget);
-      }).catch(() => {});
+    // Click overlay -> open chat
+    overlay.addEventListener('click', () => {
+      openChat();
     });
 
-    // utility: try to click the bubble inside the widget (if accessible)
-    function tryClickBubble(widget) {
-      try {
-        // widget may be the custom element; try shadowRoot first
-        if (widget && widget.shadowRoot) {
-          const bubbleBtn = widget.shadowRoot.querySelector('.n8n-chat-bubble, .n8n-chat__bubble, button[aria-label*="chat"]');
-          if (bubbleBtn) { bubbleBtn.click(); return true; }
+    // Open chat utility
+    function openChat() {
+      chat.then(widget => {
+        try {
+          const root = widget.shadowRoot;
+          const bubbleBtn = root.querySelector('.n8n-chat-bubble');
+          if (bubbleBtn) bubbleBtn.click();
+        } catch(e) {
+          const bubbleBtn = document.querySelector('.n8n-chat-bubble');
+          if (bubbleBtn) bubbleBtn.click();
         }
-        // fallback: try global DOM (some builds put bubble in light DOM)
-        const globalBubble = document.querySelector('.n8n-chat-bubble, .n8n-chat__bubble, button[aria-label*="chat"]');
-        if (globalBubble) { globalBubble.click(); return true; }
-      } catch(e) { /* ignore */ }
-      // couldn't click programmatically
-      return false;
-    }
-
-    // -------------------------
-    // Replacement logic (robust)
-    // -------------------------
-    function replaceTextNodes(rootNode) {
-      try {
-        let startNode = rootNode;
-        // If caller passed Document, start from body
-        if (rootNode instanceof Document) startNode = rootNode.body;
-        const walker = document.createTreeWalker(startNode, NodeFilter.SHOW_TEXT, null, false);
-        let node;
-        let count = 0;
-        while ((node = walker.nextNode())) {
-          if (node.nodeValue && FROM_RE.test(node.nodeValue)) {
-            node.nodeValue = node.nodeValue.replace(FROM_RE, TO_TEXT);
-            count++;
-          }
-        }
-        // attributes (title, aria-label, alt, placeholder, etc.)
-        const elems = (startNode.querySelectorAll) ? startNode.querySelectorAll('*') : [];
-        elems.forEach(el => {
-          for (let i = 0; i < el.attributes.length; i++) {
-            const attr = el.attributes[i];
-            if (attr && attr.value && FROM_RE.test(attr.value)) {
-              el.setAttribute(attr.name, attr.value.replace(FROM_RE, TO_TEXT));
-              count++;
-            }
-          }
-        });
-        return count;
-      } catch (err) {
-        // could fail if trying to read a closed shadow root — ignore
-        return 0;
-      }
-    }
-
-    // targeted replacements for known selectors (fast path)
-    function targetedReplace(root) {
-      let changed = 0;
-      try {
-        if (!root) return 0;
-        const header = (root.querySelector?.('.n8n-chat-header-title') || root.querySelector?.('.header-title') || root.querySelector?.('.n8n-chat__header .title'));
-        if (header && header.textContent && FROM_RE.test(header.textContent)) { header.textContent = TO_TEXT; changed++; }
-
-        const bubbleLabel = root.querySelector?.('.n8n-chat-bubble-text, .n8n-chat__bubble__text, .n8n-chat-bubble [aria-label]');
-        if (bubbleLabel && bubbleLabel.textContent && FROM_RE.test(bubbleLabel.textContent)) { bubbleLabel.textContent = TO_TEXT; changed++; }
-
-        const botMsg = root.querySelector?.('.n8n-chat-message.bot .n8n-chat-message-text');
-        if (botMsg && botMsg.textContent && FROM_RE.test(botMsg.textContent)) { botMsg.textContent = "Hi there! My name is Elite, how can I assist you today?"; changed++; }
-      } catch(e) { /* ignore */ }
-      return changed;
-    }
-
-    // tries replacements on a set of root nodes and returns total replaced count
-    function tryReplaceOnRoots(roots) {
-      let total = 0;
-      roots.forEach(r => {
-        total += targetedReplace(r) || 0;
-        total += replaceTextNodes(r) || 0;
       });
-      return total;
     }
 
-    // main aggressive strategy:
-    // - try immediately on widget.shadowRoot and document
-    // - set an interval (short) to keep trying for a few seconds
-    // - set MutationObservers to catch late-loaded nodes
+    // Future-proof overlay logic
     chat.then(widget => {
-      const roots = [];
-      if (widget && widget.shadowRoot) roots.push(widget.shadowRoot);
-      if (widget) roots.push(widget);      // host element
-      roots.push(document);               // global fallback
-
-      // initial try
-      let replacedCount = tryReplaceOnRoots(roots);
-
-      // if nothing replaced yet, attach MutationObserver(s) & interval
-      const start = Date.now();
-      const interval = setInterval(() => {
-        replacedCount += tryReplaceOnRoots(roots);
-        if (replacedCount > 0 || (Date.now() - start) > TRY_TIMEOUT) {
-          clearInterval(interval);
-          // if we still didn't replace anything inside shadow DOM, show fallback badge
-          if (replacedCount === 0) {
-            badge.style.display = 'block';
-            // hide the toast because badge replaces it visually
-            toast.style.display = 'none';
-          }
+      try {
+        const root = widget.shadowRoot;
+        let header = root.querySelector('.n8n-chat-header-title');
+        // If header exists and already shows Elite, no overlay needed
+        if (!header || !header.textContent.includes("Elite")) {
+          overlay.style.display = 'block';
         }
-      }, 300);
-
-      // observe each root (if possible) for dynamic nodes/attributes
-      roots.forEach(root => {
-        try {
-          const obsRoot = (root instanceof Document) ? root.body : root;
-          if (!obsRoot || !obsRoot.querySelector) return;
-          const mo = new MutationObserver(muts => {
-            muts.forEach(m => {
-              if (m.addedNodes && m.addedNodes.length) {
-                tryReplaceOnRoots([m.addedNodes[0]]);
-              }
-              if (m.type === 'attributes' && m.target) {
-                tryReplaceOnRoots([m.target]);
-              }
-            });
-          });
-          mo.observe(obsRoot, { childList:true, subtree:true, attributes:true, attributeFilter:['title','aria-label','alt','placeholder'] });
-          // stop observing after TRY_TIMEOUT to avoid keeping observers forever
-          setTimeout(() => mo.disconnect(), TRY_TIMEOUT + 500);
-        } catch(e) { /* ignore */ }
-      });
-
-      // extra: if a header exists but didn't get set, force it after a small delay (some widgets set later)
-      setTimeout(() => {
-        try {
-          if (widget && widget.shadowRoot) {
-            const head = widget.shadowRoot.querySelector('.n8n-chat-header-title');
-            if (head) head.textContent = TO_TEXT;
-          }
-        } catch(e){}
-      }, 1000);
-    }).catch(err => {
-      // createChat failed — still show the badge so users see "Elite"
-      console.warn('createChat error:', err);
-      badge.style.display = 'block';
-      toast.style.display = 'none';
+      } catch(e) {
+        // If Shadow DOM not accessible, show overlay anyway
+        overlay.style.display = 'block';
+      }
+    }).catch(() => {
+      // createChat failed (old version), show overlay
+      overlay.style.display = 'block';
     });
   </script>
 </body>
 </html>
+
 
 
 
