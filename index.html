@@ -9,7 +9,7 @@
     body { font-family: Arial, sans-serif; margin:0; padding:0; background:#fff; }
     header { width:100%; background:pink; color:#000; padding:20px; text-align:center; font-weight:700; font-size:24px; }
 
-    /* Animations */
+    /* Pop-in animation */
     @keyframes popIn {
       0% { opacity: 0; transform: translateY(20px) scale(0.8); }
       60% { opacity: 1; transform: translateY(-5px) scale(1.05); }
@@ -33,20 +33,19 @@
       animation: popIn 0.5s ease forwards;
     }
 
-    /* Overlay badge for old versions / fallback */
+    /* Overlay to hide Nathan completely */
     #elite-overlay {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      z-index: 9999;
+      z-index: 99999; /* above chat bubble */
       background: pink;
       color: black;
       padding: 6px 12px;
       border-radius: 16px;
       font-weight: bold;
-      pointer-events: auto;
       font-size: 13px;
-      display: none; /* hidden by default, shows only if needed */
+      display: none;
       cursor: pointer;
       text-align: center;
       animation: popIn 0.5s ease forwards;
@@ -65,6 +64,7 @@
     const toast = document.getElementById('chat-toast');
     const overlay = document.getElementById('elite-overlay');
 
+    // 1️⃣ Create chat widget
     const chat = createChat({
       webhookUrl: 'https://lcswvibes.app.n8n.cloud/webhook/d3340d12-6089-40d8-8d85-be73b9235d93/chat',
       floating: true,
@@ -74,21 +74,19 @@
       defaultMessage: "Hi there! My name is Elite, how can I assist you today?"
     });
 
-    // Show persistent toast after 2s with animation
+    // 2️⃣ Show toast after 2s
     setTimeout(() => { toast.style.display = 'block'; }, 2000);
 
-    // Click toast -> open chat
+    // 3️⃣ Clicking toast opens chat
     toast.addEventListener('click', () => {
       openChat();
       toast.style.display = 'none';
     });
 
-    // Click overlay -> open chat
-    overlay.addEventListener('click', () => {
-      openChat();
-    });
+    // 4️⃣ Clicking overlay opens chat
+    overlay.addEventListener('click', () => openChat());
 
-    // Open chat utility
+    // 5️⃣ Utility: open chat bubble
     function openChat() {
       chat.then(widget => {
         try {
@@ -102,28 +100,33 @@
       });
     }
 
-    // Future-proof overlay logic
+    // 6️⃣ Always show overlay in GitHub/local testing or old n8n
     chat.then(widget => {
       try {
         const root = widget.shadowRoot;
         let header = root.querySelector('.n8n-chat-header-title');
-        // If header exists and already shows Elite, no overlay needed
+        // Only hide overlay if header already says Elite
         if (!header || !header.textContent.includes("Elite")) {
           overlay.style.display = 'block';
         }
       } catch(e) {
-        // If Shadow DOM not accessible, show overlay anyway
-        overlay.style.display = 'block';
+        overlay.style.display = 'block'; // Shadow DOM not accessible
       }
     }).catch(() => {
-      // createChat failed (old version), show overlay
-      overlay.style.display = 'block';
+      overlay.style.display = 'block'; // createChat failed
     });
+
+    // 7️⃣ Extra: move overlay slightly above bubble on load
+    function positionOverlay() {
+      const bubble = document.querySelector('.n8n-chat-floating, .n8n-chat-bubble');
+      if (bubble) {
+        const rect = bubble.getBoundingClientRect();
+        overlay.style.bottom = (window.innerHeight - rect.top + 4) + "px";
+        overlay.style.right = (window.innerWidth - rect.right + 4) + "px";
+      }
+    }
+    setTimeout(positionOverlay, 1500);
+    window.addEventListener('resize', positionOverlay);
   </script>
 </body>
 </html>
-
-
-
-
-
