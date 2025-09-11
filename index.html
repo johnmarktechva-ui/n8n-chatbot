@@ -30,8 +30,8 @@
 
     /* Chat widget styles */
     .n8n-chat-container {
-      background-color: #ffffff !important; /* Widget background white */
-      color: #000000 !important;            /* Text black */
+      background-color: #ffffff !important;
+      color: #000000 !important;
       border-radius: 8px !important;
     }
 
@@ -43,7 +43,7 @@
     /* Toast popup */
     #chat-toast {
       position: fixed;
-      bottom: 90px; 
+      bottom: 90px;
       right: 30px;
       background: pink;
       color: black;
@@ -54,6 +54,7 @@
       font-size: 14px;
       display: none;
       z-index: 9999;
+      cursor: pointer;
       animation: fadeIn 0.5s ease;
     }
 
@@ -84,42 +85,23 @@
       if (widget && widget.shadowRoot) {
         const root = widget.shadowRoot;
 
-        const interval = setInterval(() => {
-          let changed = false;
+        // Toast logic
+        const toast = document.getElementById('chat-toast');
+        setTimeout(() => {
+          toast.style.display = 'block';
+          setTimeout(() => { toast.style.display = 'none'; }, 6000);
+        }, 2000);
 
-          // Header title
-          const headerTitle = root.querySelector('.n8n-chat-header-title');
-          if (headerTitle && headerTitle.innerText.includes('Nathan')) {
-            headerTitle.innerText = "Elite";
-            changed = true;
-          }
-
-          // Bubble tooltip / label
-          const bubbleLabel = root.querySelector('.n8n-chat-bubble-text');
-          if (bubbleLabel && bubbleLabel.innerText.includes('Nathan')) {
-            bubbleLabel.innerText = "Elite";
-            changed = true;
-          }
-
-          // Bot intro message
-          const botMsg = root.querySelector('.n8n-chat-message.bot .n8n-chat-message-text');
-          if (botMsg && botMsg.innerText.includes('Nathan')) {
-            botMsg.innerText = "Hi there! My name is Elite, how can I assist you today?";
-            changed = true;
-          }
-
-          if (changed) clearInterval(interval);
-        }, 200);
+        // Make toast clickable -> opens chat
+        toast.addEventListener('click', () => {
+          const bubbleBtn = root.querySelector('.n8n-chat-bubble');
+          if (bubbleBtn) bubbleBtn.click(); // simulate bubble click
+          toast.style.display = 'none'; // hide toast after click
+        });
       }
     });
-
-    // Toast behavior
-    setTimeout(() => {
-      const toast = document.getElementById('chat-toast');
-      toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, 6000); // hide after 6s
-    }, 2000); // show after 2s
   </script>
 
 </body>
 </html>
+
